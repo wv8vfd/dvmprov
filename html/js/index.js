@@ -609,6 +609,7 @@ function clearTgForm() {
     $("#addTgFormRewrites").children(".rewriteEntry").remove();
     $("#addTgFormPreferred").children("div").remove();
     $("#addTgFormAlwaysSend").children("div").remove();
+    $("#addTgFormPermittedRids").children("div").remove();
     // Reset invalid classes
     $("#addTgFormTGID").removeClass("is-invalid");
     $("#addTgFormName").removeClass("is-invalid");
@@ -644,6 +645,7 @@ function tgFormSuccess(newForm) {
     $("#addTgFormRewrites").find("input").removeClass("is-invalid");
     $("#addTgFormPreferred").find(".tgPeerEntry").removeClass("is-invalid");
     $("#addTgFormAlwaysSend").find(".tgPeerEntry").removeClass("is-invalid");
+    $("#addTgFormPermittedRids").find(".tgRidEntry").removeClass("is-invalid");
     // Make everything valid
     $("#addTgFormTGID").addClass("is-valid");
     $("#addTgFormName").addClass("is-valid");
@@ -657,6 +659,7 @@ function tgFormSuccess(newForm) {
     $("#addTgFormRewrites").find("input").addClass("is-valid");
     $("#addTgFormPreferred").find(".tgPeerEntry").addClass("is-valid");
     $("#addTgFormAlwaysSend").find(".tgPeerEntry").addClass("is-valid");
+    $("#addTgFormPermittedRids").find(".tgRidEntry").addClass("is-valid");
     // Send the form and clear after a delay
     setTimeout(() => {
         updateTgTable();
@@ -687,11 +690,13 @@ function addTgForm(newForm) {
     const rewriteEntries = $("#addTgFormRewrites").find(".rewriteEntry");
     const preferredEntries = $("#addTgFormPreferred").find(".tgPeerEntry");
     const alwaysSendEntries = $("#addTgFormAlwaysSend").find(".tgPeerEntry");
+    const permittedRidEntries = $("#addTgFormPermittedRids").find(".tgRidEntry");
     var excludes = [];
     var includes = [];
     var rewrites = [];
     var preferred = [];
     var always = [];
+    var permittedRids = [];
 
     // Validation flag
     valid = true;
@@ -779,6 +784,20 @@ function addTgForm(newForm) {
             }
         });
     }
+
+    // Get permitted RIDs
+    if (permittedRidEntries.length > 0)
+    {
+        permittedRidEntries.each((i, element) => {
+            if (!permittedRids.includes($(element).val())) {
+                permittedRids.push(parseInt($(element).val()));
+            }
+            else {
+                $(element).addClass("is-invalid");
+                valid = false;
+            }
+        });
+    }
         
     // Validate TGID
     if (isNaN(tgid)) {
@@ -808,7 +827,8 @@ function addTgForm(newForm) {
             exclusion: excludes,
             rewrite: rewrites,
             preferred: preferred,
-            always: always
+            always: always,
+            permittedRids: permittedRids
         },
         source: {
             tgid: tgid,
@@ -846,6 +866,13 @@ function addTgPeerEntry(element, peerId)
     const peerTemplate = $($("#peerItemTemplate").html());
     peerTemplate.find(".tgPeerEntry").prop("placeholder", peerId);
     $(element).after(peerTemplate);
+}
+
+function addTgRidEntry(element, ridId)
+{
+    const ridTemplate = $($("#ridItemTemplate").html());
+    ridTemplate.find(".tgRidEntry").prop("placeholder", ridId);
+    $(element).after(ridTemplate);
 }
 
 function addRewriteRule()
@@ -924,6 +951,16 @@ function tgPromptEdit(element) {
                         const peerItemTemplate = $($("#peerItemTemplate").html());
                         peerItemTemplate.find(".tgPeerEntry").val(val);
                         $("#addTgFormAddAlways").after(peerItemTemplate);
+                    });
+                    // Add the permitted RIDs
+                    if(entry.config.permittedRids === undefined) {
+                        // Migration - if permittedRids missing entirely, add as blank
+                        entry.config.permittedRids = [];
+                    }
+                    entry.config.permittedRids.forEach((val) => {
+                        const ridItemTemplate = $($("#ridItemTemplate").html());
+                        ridItemTemplate.find(".tgRidEntry").val(val);
+                        $("#addTgFormAddRid").after(ridItemTemplate);
                     });
                     // Disable slot & TG edit
                     $("#addTgFormTGID").prop("disabled", true);
@@ -1065,10 +1102,28 @@ function addPeerToTable(peerid, identity, address, port, lastPing, rxFreq, txFre
 /**
  * Add a peer to the peer ACL table
  * @param {int} peerid 
+ * @param {string} peerAlias 
+ * @param {boolean} peerLink 
+ * @param {boolean} hasPassword 
  */
-function addPeerToACL(peerid) {
+function addPeerToACL(peerid, peerAlias, peerLink, hasPassword) {
     const newRow = $(peerAclRowTemplate.html());
     newRow.find('.peerAclt-peerid').html(peerid);
+    newRow.find('.peerAclt-alias').html(peerAlias || '');
+    
+    // Display link status as icon
+    if (peerLink) {
+        newRow.find('.peerAclt-link').html('<i class="iconoir-check-circle-solid text-success"></i>');
+    } else {
+        newRow.find('.peerAclt-link').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
+    }
+    
+    // Display password status as icon
+    if (hasPassword) {
+        newRow.find('.peerAclt-password').html('<i class="iconoir-check-circle-solid text-success"></i>');
+    } else {
+        newRow.find('.peerAclt-password').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
+    }
 
     peerAclRowTemplate.before(newRow);
 }
@@ -1090,21 +1145,25 @@ function generatePeerPassword() {
  */
 function clearPeerAclForm() {
     $("#addPeerAclFormPeerID").val("");
+    $("#addPeerAclFormAlias").val("");
     $("#addPeerAclFormPassword").val("");
+    $("#addPeerAclFormLink").prop("checked", false);
 }
 
 /**
  * Submit the add peer ACL form and add a new peer to the ACL list
  */
 function addPeerAclForm() {
-    // Get peerID and password
+    // Get form values
     const peerId = parseInt($("#addPeerAclFormPeerID").val());
+    const peerAlias = $("#addPeerAclFormAlias").val();
     const password = $("#addPeerAclFormPassword").val();
+    const peerLink = $("#addPeerAclFormLink").prop("checked");
 
     // Validation flag
     valid = true;
 
-    // Validate TGID
+    // Validate Peer ID
     if (isNaN(peerId)) {
         $("#addPeerAclFormPeerID").addClass("is-invalid");
         valid = false;
@@ -1118,7 +1177,9 @@ function addPeerAclForm() {
     // Prepare data
     postData = {
         peerId: peerId,
-        password: password
+        peerAlias: peerAlias,
+        peerPassword: password,
+        peerLink: peerLink
     };
 
     // Put
@@ -1170,15 +1231,21 @@ function peerAclCommit() {
 function peerAclFormSuccess() {
     // Clear any invalids
     $("#addPeerAclFormPeerID").removeClass("is-invalid");
+    $("#addPeerAclFormAlias").removeClass("is-invalid");
     $("#addPeerAclFormPassword").removeClass("is-invalid");
     // Make everything valid
     $("#addPeerAclFormPeerID").addClass("is-valid");
+    $("#addPeerAclFormAlias").addClass("is-valid");
     $("#addPeerAclFormPassword").addClass("is-valid");
     // Send the form and clear after a delay
     setTimeout(() => {
         updatePeerTable();
         $("#modalPeerAclAdd").modal('hide');
         clearPeerAclForm();
+        // Clear valid classes after closing
+        $("#addPeerAclFormPeerID").removeClass("is-valid");
+        $("#addPeerAclFormAlias").removeClass("is-valid");
+        $("#addPeerAclFormPassword").removeClass("is-valid");
     }, 300);
 }
 
@@ -1291,7 +1358,7 @@ function updatePeerTable() {
             } else {
                 console.log("Got new Peer ACL")
                 data.peers.forEach(entry => {
-                    addPeerToACL(entry.peerId);
+                    addPeerToACL(entry.peerId, entry.peerAlias, entry.peerLink, entry.peerPassword);
                 });
                 // Hide the loading spinner
                 $("#peerAclSpinnerTable").hide();
