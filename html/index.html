@@ -449,6 +449,23 @@
                                             Add
                                         </button>
                                     </div>
+                                    <!-- Permitted RIDs -->
+                                    <template id="ridItemTemplate">
+                                        <div class="p-1 row row-cols-lg-auto g-0">
+                                            <input type="number" class="form-control tgRidEntry" style="width: 50%; "max="16777215" min="1" placeholder="Radio ID">
+                                            <button type="button" class="btn btn-danger mx-2" onclick="delEntry(this)">
+                                                <i class="iconoir-trash"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <div class="mb-3" id="addTgFormPermittedRids">
+                                        <label>Permitted RIDs</label>
+                                        <small class="text-muted d-block mb-1">Radio IDs allowed to transmit on this talkgroup (leave empty to allow all)</small>
+                                        <button type="button" class="btn btn-primary btn-sm m-1" id="addTgFormAddRid" onclick="addTgRidEntry(this, 0)">
+                                            <i class="iconoir-plus-circle-solid"></i>
+                                            Add
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -579,7 +596,10 @@
                         <table class="table table-hover" id="peerAclt">
                             <thead>
                                 <tr>
-                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:10%"><span>Peer ID</span><i class="iconoir-sort unsorted"></i></th>
+                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:15%"><span>Peer ID</span><i class="iconoir-sort unsorted"></i></th>
+                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:25%"><span>Alias</span><i class="iconoir-sort unsorted"></i></th>
+                                    <th scope="col" class="table-header" style="width: 10%;"><span>Link</span></th>
+                                    <th scope="col" class="table-header" style="width: 10%;"><span>Password</span></th>
                                     <th scope="col" class="table-header" style="width: 10%;"><span>Actions</span></th>
                                 </tr>
                             </thead>
@@ -587,6 +607,9 @@
                                 <template id="peerAcltr-template">
                                     <tr>    
                                         <td class="peerAclt-peerid"></td>
+                                        <td class="peerAclt-alias"></td>
+                                        <td class="peerAclt-link"></td>
+                                        <td class="peerAclt-password"></td>
                                         <td class="peerAclt-actions">
                                             <div class="btn-group" role="group" aria-label="Peer ACL actions">
                                                 <button type="button" class="btn btn-danger" data-bs-toggle="tooltip"
@@ -621,11 +644,20 @@
                                         <div class="invalid-feedback">Peer ID invalid</div>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="addPeerAclFormAlias" class="form-label">Alias</label>
+                                        <input type="text" class="form-control" id="addPeerAclFormAlias" placeholder="Optional peer name">
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="addPeerAclFormPassword" class="form-label">Password</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="addPeerAclFormPassword">
                                             <button class="btn btn-outline-secondary" type="button" onclick="generatePeerPassword()">Generate</button>
                                         </div>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="addPeerAclFormLink">
+                                        <label for="addPeerAclFormLink" class="form-check-label">Peer Link</label>
+                                        <small class="text-muted d-block">Enable if this peer is a linked FNE master</small>
                                     </div>
                                 </form>
                             </div>
