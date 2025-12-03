@@ -460,6 +460,7 @@
                                     </template>
                                     <div class="mb-3" id="addTgFormPermittedRids">
                                         <label>Permitted RIDs</label>
+                                        <small class="text-muted d-block mb-1">Radio IDs allowed to transmit on this talkgroup (leave empty to allow all)</small>
                                         <button type="button" class="btn btn-primary btn-sm m-1" id="addTgFormAddRid" onclick="addTgRidEntry(this, 0)">
                                             <i class="iconoir-plus-circle-solid"></i>
                                             Add
@@ -595,10 +596,13 @@
                         <table class="table table-hover" id="peerAclt">
                             <thead>
                                 <tr>
-                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:15%"><span>Peer ID</span><i class="iconoir-sort unsorted"></i></th>
-                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:25%"><span>Alias</span><i class="iconoir-sort unsorted"></i></th>
-                                    <th scope="col" class="table-header" style="width: 10%;"><span>Link</span></th>
-                                    <th scope="col" class="table-header" style="width: 10%;"><span>Password</span></th>
+                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:10%"><span>Peer ID</span><i class="iconoir-sort unsorted"></i></th>
+                                    <th scope="col" onclick="clickSort(this)" data-sort="asc" class="table-header" style="width:20%"><span>Alias</span><i class="iconoir-sort unsorted"></i></th>
+                                    <th scope="col" class="table-header" style="width: 8%;"><span>Replica</span></th>
+                                    <th scope="col" class="table-header" style="width: 8%;"><span>Req Keys</span></th>
+                                    <th scope="col" class="table-header" style="width: 8%;"><span>Inhibit</span></th>
+                                    <th scope="col" class="table-header" style="width: 8%;"><span>Priority</span></th>
+                                    <th scope="col" class="table-header" style="width: 8%;"><span>Password</span></th>
                                     <th scope="col" class="table-header" style="width: 10%;"><span>Actions</span></th>
                                 </tr>
                             </thead>
@@ -607,7 +611,10 @@
                                     <tr>    
                                         <td class="peerAclt-peerid"></td>
                                         <td class="peerAclt-alias"></td>
-                                        <td class="peerAclt-link"></td>
+                                        <td class="peerAclt-replica"></td>
+                                        <td class="peerAclt-reqkeys"></td>
+                                        <td class="peerAclt-inhibit"></td>
+                                        <td class="peerAclt-priority"></td>
                                         <td class="peerAclt-password"></td>
                                         <td class="peerAclt-actions">
                                             <div class="btn-group" role="group" aria-label="Peer ACL actions">
@@ -653,10 +660,28 @@
                                             <button class="btn btn-outline-secondary" type="button" onclick="generatePeerPassword()">Generate</button>
                                         </div>
                                     </div>
-                                    <div class="mb-3 form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="addPeerAclFormLink">
-                                        <label for="addPeerAclFormLink" class="form-check-label">Peer Link</label>
-                                        <small class="text-muted d-block">Enable if this peer is a linked FNE master</small>
+                                    <div class="mb-3">
+                                        <label class="form-label">Peer Options</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="addPeerAclFormReplica">
+                                            <label for="addPeerAclFormReplica" class="form-check-label">Peer Replica</label>
+                                            <small class="text-muted d-block">Enable if this peer is a linked FNE replica</small>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="addPeerAclFormReqKeys">
+                                            <label for="addPeerAclFormReqKeys" class="form-check-label">Can Request Keys</label>
+                                            <small class="text-muted d-block">Allow peer to request encryption keys</small>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="addPeerAclFormInhibit">
+                                            <label for="addPeerAclFormInhibit" class="form-check-label">Can Issue Inhibit</label>
+                                            <small class="text-muted d-block">Allow peer to issue inhibit/uninhibit commands</small>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="addPeerAclFormPriority">
+                                            <label for="addPeerAclFormPriority" class="form-check-label">Has Call Priority</label>
+                                            <small class="text-muted d-block">Give this peer priority for call handling</small>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
