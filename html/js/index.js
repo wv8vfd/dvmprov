@@ -1103,19 +1103,43 @@ function addPeerToTable(peerid, identity, address, port, lastPing, rxFreq, txFre
  * Add a peer to the peer ACL table
  * @param {int} peerid 
  * @param {string} peerAlias 
- * @param {boolean} peerLink 
+ * @param {boolean} peerReplica 
+ * @param {boolean} canRequestKeys 
+ * @param {boolean} canIssueInhibit 
+ * @param {boolean} hasCallPriority 
  * @param {boolean} hasPassword 
  */
-function addPeerToACL(peerid, peerAlias, peerLink, hasPassword) {
+function addPeerToACL(peerid, peerAlias, peerReplica, canRequestKeys, canIssueInhibit, hasCallPriority, hasPassword) {
     const newRow = $(peerAclRowTemplate.html());
     newRow.find('.peerAclt-peerid').html(peerid);
     newRow.find('.peerAclt-alias').html(peerAlias || '');
     
-    // Display link status as icon
-    if (peerLink) {
-        newRow.find('.peerAclt-link').html('<i class="iconoir-check-circle-solid text-success"></i>');
+    // Display replica status as icon
+    if (peerReplica) {
+        newRow.find('.peerAclt-replica').html('<i class="iconoir-check-circle-solid text-success"></i>');
     } else {
-        newRow.find('.peerAclt-link').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
+        newRow.find('.peerAclt-replica').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
+    }
+    
+    // Display canRequestKeys status as icon
+    if (canRequestKeys) {
+        newRow.find('.peerAclt-reqkeys').html('<i class="iconoir-check-circle-solid text-success"></i>');
+    } else {
+        newRow.find('.peerAclt-reqkeys').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
+    }
+    
+    // Display canIssueInhibit status as icon
+    if (canIssueInhibit) {
+        newRow.find('.peerAclt-inhibit').html('<i class="iconoir-check-circle-solid text-success"></i>');
+    } else {
+        newRow.find('.peerAclt-inhibit').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
+    }
+    
+    // Display hasCallPriority status as icon
+    if (hasCallPriority) {
+        newRow.find('.peerAclt-priority').html('<i class="iconoir-check-circle-solid text-success"></i>');
+    } else {
+        newRow.find('.peerAclt-priority').html('<i class="iconoir-xmark-circle-solid text-danger"></i>');
     }
     
     // Display password status as icon
@@ -1147,7 +1171,10 @@ function clearPeerAclForm() {
     $("#addPeerAclFormPeerID").val("");
     $("#addPeerAclFormAlias").val("");
     $("#addPeerAclFormPassword").val("");
-    $("#addPeerAclFormLink").prop("checked", false);
+    $("#addPeerAclFormReplica").prop("checked", false);
+    $("#addPeerAclFormReqKeys").prop("checked", false);
+    $("#addPeerAclFormInhibit").prop("checked", false);
+    $("#addPeerAclFormPriority").prop("checked", false);
 }
 
 /**
@@ -1158,7 +1185,10 @@ function addPeerAclForm() {
     const peerId = parseInt($("#addPeerAclFormPeerID").val());
     const peerAlias = $("#addPeerAclFormAlias").val();
     const password = $("#addPeerAclFormPassword").val();
-    const peerLink = $("#addPeerAclFormLink").prop("checked");
+    const peerReplica = $("#addPeerAclFormReplica").prop("checked");
+    const canRequestKeys = $("#addPeerAclFormReqKeys").prop("checked");
+    const canIssueInhibit = $("#addPeerAclFormInhibit").prop("checked");
+    const hasCallPriority = $("#addPeerAclFormPriority").prop("checked");
 
     // Validation flag
     valid = true;
@@ -1179,7 +1209,10 @@ function addPeerAclForm() {
         peerId: peerId,
         peerAlias: peerAlias,
         peerPassword: password,
-        peerLink: peerLink
+        peerReplica: peerReplica,
+        canRequestKeys: canRequestKeys,
+        canIssueInhibit: canIssueInhibit,
+        hasCallPriority: hasCallPriority
     };
 
     // Put
@@ -1358,7 +1391,15 @@ function updatePeerTable() {
             } else {
                 console.log("Got new Peer ACL")
                 data.peers.forEach(entry => {
-                    addPeerToACL(entry.peerId, entry.peerAlias, entry.peerLink, entry.peerPassword);
+                    addPeerToACL(
+                        entry.peerId, 
+                        entry.peerAlias, 
+                        entry.peerReplica, 
+                        entry.canRequestKeys, 
+                        entry.canIssueInhibit, 
+                        entry.hasCallPriority, 
+                        entry.peerPassword
+                    );
                 });
                 // Hide the loading spinner
                 $("#peerAclSpinnerTable").hide();
